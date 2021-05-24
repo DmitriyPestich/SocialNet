@@ -6,6 +6,7 @@ import Music from "./components/Music/Music";
 import Settings from "./components/Settings/Settings";
 import {BrowserRouter, Route, withRouter} from "react-router-dom";
 import UsersContainer from "./components/Users/UsersContainer";
+import GiphyContainer from "./components/Giphy/GiphyContainer";
 import HeaderContainer from "./components/Header/HeaderContainer";
 import LoginContainer from "./components/Login/LoginContainer";
 import {compose} from "redux";
@@ -20,8 +21,17 @@ const ProfileContainer = React.lazy(() => import('./components/Profile/ProfileCo
 
 class App extends Component {
 
+    catchAllUnhandleErrors = (promiseRejectionEvent) => {
+        alert('Some error occured');
+    };
+
     componentDidMount() {
-        this.props.initializedApp()
+        this.props.initializedApp();
+        window.addEventListener("unhandledrejection", this.catchAllUnhandleErrors)
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("unhandledrejection", this.catchAllUnhandleErrors)
     }
 
     render() {
@@ -39,6 +49,7 @@ class App extends Component {
                             />
                             <Route path="/news" render={() => <News/>}/>
                             <Route path="/music" render={() => <Music/>}/>
+                            <Route path="/giphy" render={() => <GiphyContainer/>}/>
                             <Route path="/users" render={() => <UsersContainer/>}/>
                             <Route path="/login" render={() => <LoginContainer/>}/>
                             <Route path="/settings" render={() => <Settings/>}/>
@@ -63,13 +74,11 @@ const AppContainer = compose(
     }))(App);
 
 const SocNetApp = (props) => {
-    return <React.StrictMode>
-        <Provider store={store}>
+    return <Provider store={store}>
             <BrowserRouter>
                 <AppContainer />
             </BrowserRouter>
-        </Provider>
-    </React.StrictMode>
+    </Provider>
 }
 
 export default SocNetApp;
