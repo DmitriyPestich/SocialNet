@@ -69,9 +69,7 @@ let mapStateToProps = (state) => {
 
 const AppContainer = compose(
     withRouter,
-    connect(mapStateToProps, {
-        initializedApp
-    }))(App);
+    connect(mapStateToProps, {initializedApp}))(App);
 
 const SocNetApp = (props) => {
     return <Provider store={store}>
@@ -79,7 +77,8 @@ const SocNetApp = (props) => {
                 <AppContainer />
             </BrowserRouter>
     </Provider>
-}
+};
+
 
 export default SocNetApp;
 
