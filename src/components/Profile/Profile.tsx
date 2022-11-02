@@ -1,39 +1,36 @@
-import React, {FC} from 'react';
-import s from './Profile.module.css';
-import MyPosts from "./MyPosts/MyPosts";
+import React from 'react';
 import ProfileInfo from "./ProfileInfo/ProfileInfo";
-import {PostType, ProfileType} from "../../types/types";
-
+import MyPosts from "./MyPosts/MyPosts";
+import {PostType, ProfileType} from '../../types/types';
 
 type PropsType = {
-    postData: Array<PostType>,
-    profile: ProfileType | null,
-    curentUserId:  number | null,
-    status: string | null,
-    isAuth: boolean,
-    blocked: boolean,
-    loading: boolean,
-    profileDataSuccess: boolean,
-    addPost: (message: string) => void,
-    getUserProfile: (userId: number) => void,
-    getProfileStatus: (userId: number) => void,
-    updateProfileStatus: (status: string) => void,
-    savePhoto: (file: any) => void,
-    saveProfileData: (profile: ProfileType) => void,
-    setProfileDataSuccess: (payload: boolean) => void,
+    profile: ProfileType | null
+    status: string
+    updateStatus: (status: string) => void
     isOwner: boolean
+    savePhoto: (file: File) => void
+    saveProfile: (profile: ProfileType) => void
+    postData: Array<PostType>
+    addPost: (message: string) => void
+    profileDataSuccess: boolean
+    setProfileDataSuccess: (payload: boolean) => void
 }
 
-let Profile: FC<PropsType> = (props) => {
-        return (
-            <div className={s.main_content}>
-                <ProfileInfo {...props}/>
-                <MyPosts
-                    postData={props.postData}
-                    addPost={props.addPost}
-                />
-            </div>
-        );
+const Profile:React.FC<PropsType> = (props) => {
+    return (
+        <div>
+            <ProfileInfo savePhoto={props.savePhoto}
+                         isOwner={props.isOwner}
+                         profile={props.profile}
+                         status={props.status}
+                         saveProfile={props.saveProfile}
+                         updateStatus={props.updateStatus}
+                         profileDataSuccess={props.profileDataSuccess}
+                         setProfileDataSuccess={props.setProfileDataSuccess}
+            />
+            <MyPosts postData={props.postData} addPost={props.addPost}/>
+        </div>
+    )
 }
 
 export default Profile;

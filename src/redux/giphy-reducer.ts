@@ -1,5 +1,5 @@
-import {giphyAPI} from "../API/api";
-const SAVE_GIPHY = 'ADD-SAVE_GIPHY';
+import {giphyAPI} from "../API/GiphyApi";
+import {BaseThunkType, InfernActionsTypes} from "./redux-store";
 
 let initialState = {
     giphyId: null as number | null, //array ids of giphy
@@ -8,9 +8,9 @@ let initialState = {
 
 export type InitialStateType = typeof initialState;
 
-const giphyReducer = (state = initialState, action: any): InitialStateType => {
+const giphyReducer = (state = initialState, action: ActionsType): InitialStateType => {
     switch (action.type) {
-        case SAVE_GIPHY: {
+        case 'SAVE_GIPHY': {
             return {
                 ...state,
                 giphyId: action.payload,
@@ -21,15 +21,16 @@ const giphyReducer = (state = initialState, action: any): InitialStateType => {
     }
 };
 
-type AddGiphyType = {
-    type: typeof SAVE_GIPHY,
-    payload: number
-}
-export const addGiphy = (giphyId: number): AddGiphyType => ({type : SAVE_GIPHY, payload: giphyId});
+export const actions = {
+    addGiphy: (giphyId: number) => ({type : 'SAVE_GIPHY', payload: giphyId} as const)
+};
 
-export const saveGiphy = (file: any) => async (dispatch: any) => {
+export const saveGiphy = (file: File): ThunkType => async (dispatch) => {
     let response = await giphyAPI.uploadGiphy(file);
-    console.log('resp', response);
+    console.log(response)
 };
 
 export default giphyReducer;
+
+type ActionsType = InfernActionsTypes<typeof actions>
+type ThunkType = BaseThunkType<ActionsType>

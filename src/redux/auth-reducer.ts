@@ -1,9 +1,11 @@
-import {authAPI, securityAPI} from "../API/api";
+import {ResultCodesEnum, ResultCodesForCapthaEnum} from "../API/api";
 import {stopSubmit} from "redux-form";
-
-const SET_USER_DATA = 'SET_USER_DATA';
-const SET_PROCCESSING = 'SET_PROCCESSING';
-const SET_CAPTCHA = 'SET_CAPTCHA';
+import {LoginFormType} from "../components/Login/LoginForm";
+import {authAPI} from "../API/AuthApi";
+import {securityAPI} from "../API/SecurityApi";
+import {ResponseType} from "../API/api";
+import {BaseThunkType, InfernActionsTypes} from "./redux-store";
+import {Action} from "redux";
 
 let initialState = {
     userId: null as number | null,
@@ -16,23 +18,23 @@ let initialState = {
 
 type InitialStateType = typeof initialState;
 
-const authReducer = (state = initialState, action: any): InitialStateType => {
+const authReducer = (state = initialState, action: ActionsType): InitialStateType => {
 
     switch (action.type) {
 
-        case SET_USER_DATA: {
+        case 'SET_USER_DATA': {
             return {
                 ...state,
                 ...action.payload
             }
         }
-        case SET_PROCCESSING: {
+        case 'SET_PROCCESSING': {
             return {
                 ...state,
                 blocked: action.blocked
             }
         }
-        case SET_CAPTCHA: {
+        case 'SET_CAPTCHA': {
             return {
                 ...state,
                 captcha: action.payload,
@@ -41,93 +43,76 @@ const authReducer = (state = initialState, action: any): InitialStateType => {
         default:
             return state;
     }
+};
+
+export const actions = {
+setAuthUserData: (userId: number | null, email: string | null, login: string | null, isAuth: boolean) => ({
+    type: 'SET_USER_DATA',
+    payload: {userId, email, login, isAuth}
+} as const),
+setProccessing: (blocked: boolean) =>
+    ({type: 'SET_PROCCESSING', blocked} as const),
+setChaptcha: (payload: string | null) =>
+    ({type: 'SET_CAPTCHA', payload} as const)
 
 };
 
-type SetAuthUserDataActionPayloadType = {
-    userId: number | null,
-    email: string | null,
-    login: string | null,
-    isAuth: boolean
-}
-type SetAuthUserDataActionType = {
-    type: typeof SET_USER_DATA
-    payload: SetAuthUserDataActionPayloadType
-}
-export const setAuthUserData = (userId: number | null, email: string | null, login: string | null, isAuth: boolean): SetAuthUserDataActionType => ({
-    type: SET_USER_DATA,
-    payload: {userId, email, login, isAuth}
-});
-
-type SetProccessingType = {
-    type: typeof SET_PROCCESSING,
-    blocked: boolean
-}
-export const setProccessing = (blocked: boolean): SetProccessingType =>
-    ({type: SET_PROCCESSING, blocked});
-
-type SetChaptchaType = {
-    type: typeof SET_CAPTCHA,
-    payload: string | null
-}
-export const setChaptcha = (payload: string | null): SetChaptchaType =>
-    ({type: SET_CAPTCHA, payload});
-
-
-export const chekAuthMe = () => async (dispatch: any) => {
+export const chekAuthMe = (): ThunkType => async (dispatch) => {
     let response = await authAPI.Me();
-    if (response.data.resultCode === 0) {
-        let {id, email, login} = response.data.data;
-        dispatch(setAuthUserData(id, email, login, true));
+    if (response.resultCode === ResultCodesEnum.Success) {
+        let {id, email, login} = response.data;
+        dispatch(actions.setAuthUserData(id, email, login, true));
     }
 };
 
-export const getCapcha = () => async (dispatch: any) => {
+export const getCapcha = (): ThunkType => async (dispatch) => {
     let response = await securityAPI.captcha();
-        dispatch(setChaptcha(response.data.url));
+    dispatch(actions.setChaptcha(response.data.url));
 };
 
-export const getLoginError = (response: any) => async (dispatch: any) => {
+export const getLoginError = (response: ResponseType<{userId: number}, ResultCodesEnum | ResultCodesForCapthaEnum>): ThunkType => async (dispatch) => {
     let stopSumbmitMessage = () => {
-        let message = response.data.messages.length > 0 ? response.data.messages[0] : "Some ERROR";
+        let message = response.messages.length > 0 ? response.messages[0] : "Some ERROR";
         let action = stopSubmit("login", {_error: message});
         dispatch(action);
-    }
-    if (response.data.resultCode === 10) {
+        dispatch({type: 'asd'});
+    };
+    if (response.resultCode === ResultCodesForCapthaEnum.Error) {
         dispatch(getCapcha());
         stopSumbmitMessage()
-    }  else {
+    } else {
         stopSumbmitMessage()
-    }      
+    }
 };
 
-export const login = (formData: any) => (dispatch: any) => {
-        dispatch(setProccessing(true));
-        authAPI.login(formData)
-            .then((response: any) => {
-                if (response.data.resultCode === 0) {
-                    dispatch(chekAuthMe())
-                    dispatch(setChaptcha(null))
-                } else {
-                    dispatch(getLoginError(response))                 
-                }
-            dispatch(setProccessing(false));
-        })
+export const login = (formData: LoginFormType): ThunkType => async (dispatch) => {
+    dispatch(actions.setProccessing(true));
+    let response = await authAPI.login(formData);
+    if (response.resultCode === ResultCodesEnum.Success) {
+        dispatch(chekAuthMe());
+        dispatch(actions.setChaptcha(null))
+    } else {
+        dispatch(getLoginError(response))
+    }
+    dispatch(actions.setProccessing(false));
 };
 
-export const logout = () => {
-    return async (dispatch: any) => {
-        dispatch(setProccessing(true));
+export const logout = (): ThunkType => {
+    return async (dispatch) => {
+        dispatch(actions.setProccessing(true));
         let response = await authAPI.logout();
-            if (response.data.resultCode === 0) {
-                dispatch(setAuthUserData(null, null, null, false));
-                dispatch(setProccessing(false));
-                dispatch(chekAuthMe());
-            } else if (response.data.resultCode === 1) {
-                console.log(response.data.messages[0]);
-                dispatch(setProccessing(false));
-            }
+        if (response.resultCode === ResultCodesEnum.Success) {
+            dispatch(actions.setAuthUserData(null, null, null, false));
+            dispatch(actions.setProccessing(false));
+            dispatch(chekAuthMe());
+        } else if (response.resultCode === ResultCodesEnum.Error) {
+            console.log(response.messages[0]);
+            dispatch(actions.setProccessing(false));
+        }
     }
 };
 
 export default authReducer;
+
+type ActionsType = InfernActionsTypes<typeof actions>
+type ThunkType = BaseThunkType<ActionsType | Action>

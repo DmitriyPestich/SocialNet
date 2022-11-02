@@ -1,3 +1,6 @@
+import {BaseThunkType, InfernActionsTypes} from "./redux-store";
+import {Action} from "redux";
+
 export type ItemMenuType = {
     url: string,
     title: string

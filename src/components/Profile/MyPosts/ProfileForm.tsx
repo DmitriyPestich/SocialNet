@@ -1,5 +1,5 @@
 import React from 'react';
-import {Field, InjectedFormProps, reduxForm} from "redux-form";
+import {InjectedFormProps, reduxForm} from "redux-form";
 import {compose} from "redux";
 import s from "./MyPosts.module.css";
 import {createField, Input, GetStringKeys} from "../../common/CreacteField/CreateField";

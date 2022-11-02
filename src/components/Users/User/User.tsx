@@ -7,13 +7,12 @@ import {UsersType} from "../../../types/types";
 
 type PropsType = {
     dataUser: UsersType,
-    follow: (userId: number) => void,
-    unfollow: (userId: number) => void,
+    subscribeUser: (userId: number, subscribe: boolean) => void,
     followingProccess: Array<number>,
     isAuth: boolean
 }
 let User: FC<PropsType> = ({dataUser: {photos, id, followed, name, status},
-                  followingProccess, follow, unfollow, isAuth}) => {
+                  followingProccess, subscribeUser, isAuth}) => {
     return (
         <div className={s.user}>
             <div>
@@ -25,11 +24,11 @@ let User: FC<PropsType> = ({dataUser: {photos, id, followed, name, status},
                         {
                             followed
                                 ? <button disabled={followingProccess.some((ids) => ids === id)} onClick={() => {
-                                    unfollow(id)
+                                    subscribeUser(id, false)
                                 }}>Unfollow</button>
                                 :
                                 <button disabled={followingProccess.some((ids) => ids === id)} onClick={() => {
-                                    follow(id)
+                                    subscribeUser(id, true)
                                 }}>Follow</button>
                         }
                     </div>

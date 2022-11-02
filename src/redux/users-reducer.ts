@@ -1,12 +1,9 @@
-import {usersAPI} from "../API/api";
+import {ResponseType, ResultCodesEnum} from "../API/api";
 import {UsersType} from "../types/types";
-
-const SUBSCRIBE = 'SUBSCRIBE';
-const SET_USERS = 'SET_USERS';
-const CHANGE_PAGE = 'CHANGE_PAGE';
-const SET_TOTAL_COUNT = 'SET_TOTAL_COUNT';
-const IS_FETCHING = 'IS_FETCHING';
-const FOLLOWING_PROCCESS = 'FOLLOWING_PROCCESS';
+import {usersAPI} from "../API/UserApi";
+import {AppStateType, BaseThunkType, InfernActionsTypes} from "./redux-store";
+import {Dispatch} from "redux";
+import {ThunkAction} from "redux-thunk";
 
 let initialState = {
     users: [] as Array<UsersType>,
@@ -18,10 +15,9 @@ let initialState = {
 };
 
 type InitialStateType = typeof initialState;
-const usersReducer = (state = initialState, action: any): InitialStateType => {
-
+const usersReducer = (state = initialState, action: ActionsType): InitialStateType => {
     switch (action.type) {
-        case SUBSCRIBE: {
+        case 'SUBSCRIBE': {
             return {
                 ...state,
                 users: state.users.map(u => {
@@ -32,53 +28,31 @@ const usersReducer = (state = initialState, action: any): InitialStateType => {
                 })
             };
         }
-/*        case FOLLOW: {
-            return {
-                ...state,
-                users: state.users.map(u => {
-                    if (u.id === action.userId) {
-                        return {...u, followed: true}
-                    }
-                    return u;
-                })
-            };
-        }
-        case UNFOLLOW: {
-            return {
-                ...state,
-                users: state.users.map(u => {
-                    if (u.id === action.userId) {
-                        return {...u, followed: false}
-                    }
-                    return u;
-                })
-            };
-        }*/
-        case SET_USERS: {
+        case 'SET_USERS': {
             return {
                 ...state,
                 users: action.users
             }
         }
-        case CHANGE_PAGE: {
+        case 'CHANGE_PAGE': {
             return {
                 ...state,
                 currentPage: action.currentPage
             }
         }
-        case SET_TOTAL_COUNT: {
+        case 'SET_TOTAL_COUNT': {
             return {
                 ...state,
                 totalCount: action.totalCount
             }
         }
-        case IS_FETCHING: {
+        case 'IS_FETCHING': {
             return {
                 ...state,
                 isFetching: action.isFetching
             }
         }
-        case FOLLOWING_PROCCESS: {
+        case 'FOLLOWING_PROCCESS': {
             return {
                 ...state,
                 followingProccess: action.isFollowing
@@ -89,76 +63,48 @@ const usersReducer = (state = initialState, action: any): InitialStateType => {
         default:
             return state;
     }
-
 };
 
-type SubscribeSuccsesType = {
-    type: typeof SUBSCRIBE,
-    userId: number,
-    subscribe: boolean
+export const actions = {
+    subscribeSuccses: (userId: number, subscribe: boolean) => ({type: 'SUBSCRIBE', userId, subscribe} as const),
+    setUsers: (users: Array<UsersType>) => ({type: 'SET_USERS', users} as const),
+    changePage: (currentPage: number) => ({type: 'CHANGE_PAGE', currentPage} as const),
+    setTotalCount: (count: number) => ({type: 'SET_TOTAL_COUNT', totalCount: count} as const),
+    setIsFetching: (isFetching: boolean) => ({type: 'IS_FETCHING', isFetching} as const),
+    setFollowingProccess: (isFollowing: boolean, userId: number) => ({type: 'FOLLOWING_PROCCESS', isFollowing, userId} as const)
 }
-export const subscribeSuccses = (userId: number, subscribe: boolean): SubscribeSuccsesType =>
-    ({type: SUBSCRIBE, userId, subscribe});
-type SetUsersType = {
-    type: typeof SET_USERS,
-    users: Array<UsersType>
-}
-export const setUsers = (users: Array<UsersType>): SetUsersType =>
-    ({type: SET_USERS, users});
-type ChangePageType = {
-    type: typeof CHANGE_PAGE,
-    currentPage: number
-}
-export const changePage = (currentPage: number): ChangePageType =>
-    ({type: CHANGE_PAGE, currentPage});
-type SetTotalCountType = {
-    type: typeof SET_TOTAL_COUNT,
-    totalCount: number
-}
-export const setTotalCount = (count: number): SetTotalCountType =>
-    ({type: SET_TOTAL_COUNT, totalCount: count});
-type SetIsFetchingType = {
-    type: typeof IS_FETCHING,
-    isFetching: boolean
-}
-export const setIsFetching = (isFetching: boolean): SetIsFetchingType =>
-    ({type: IS_FETCHING, isFetching});
-type SetFollowingProccessType = {
-    type: typeof FOLLOWING_PROCCESS,
-    isFollowing: boolean,
-    userId: number
-}
-export const setFollowingProccess = (isFollowing: boolean, userId: number): SetFollowingProccessType =>
-    ({type: FOLLOWING_PROCCESS, isFollowing, userId});
 
-
-export const uploadUsers = (currentPage: number, amountUsersOnPage: number) => {
-    return async (dispatch: any) => {
-        dispatch(setIsFetching(true));
-        dispatch(changePage(currentPage));
+export const uploadUsers = (currentPage: number, amountUsersOnPage: number): ThunkType => {
+    return async (dispatch) => {
+        dispatch(actions.setIsFetching(true));
+        dispatch(actions.changePage(currentPage));
         let response = await usersAPI.uploadUsers(currentPage, amountUsersOnPage);
-            dispatch(setUsers(response.items));
-            dispatch(setTotalCount(response.totalCount));
-            dispatch(setIsFetching(false));
+        try {
+            dispatch(actions.setUsers(response.items));
+            dispatch(actions.setTotalCount(response.totalCount));
+            dispatch(actions.setIsFetching(false));
+        } catch (e) {
+            alert(e.response.data.message);
+        }
     }
 };
 
-export const followUnfollowFlow = (dispatch: any, requestMethod: (userId: number) => any, subscribe: boolean, userId: number) => {
-    return async (dispatch: any) => {
-        dispatch(setFollowingProccess(true, userId));
-        let response = await requestMethod(userId);
-            if (response.resultCode === 0) {
-                dispatch(subscribeSuccses(userId, subscribe))
-            }
-            dispatch(setFollowingProccess(false, userId));
+export const followUnfollowFlow = (dispatch: Dispatch<ActionsType>, requestMethod: (userId: number, subscribe: boolean) => Promise<ResponseType>, subscribe: boolean, userId: number) => {
+    return async () => {
+        dispatch(actions.setFollowingProccess(true, userId));
+        let response = await requestMethod(userId, subscribe);
+        if (response.resultCode === ResultCodesEnum.Success) {
+            dispatch(actions.subscribeSuccses(userId, subscribe))
+        }
+        dispatch(actions.setFollowingProccess(false, userId));
     }
 };
 
-export const unfollow = (userId: number) => (dispatch: any) => {
-    dispatch(followUnfollowFlow(dispatch, usersAPI.unfollow.bind(usersAPI), false, userId));
-};
-export const follow = (userId: number) => (dispatch: any) => {
-    dispatch(followUnfollowFlow(dispatch, usersAPI.follow.bind(usersAPI), true, userId));
+export const subscribeUser = (userId: number, subscribe: boolean): ThunkType => async (dispatch) => {
+    dispatch(followUnfollowFlow(dispatch, usersAPI.subscribe.bind(usersAPI), subscribe, userId));
 };
 
 export default usersReducer;
+
+export type ActionsType = InfernActionsTypes<typeof actions>
+type ThunkType = BaseThunkType<ActionsType>

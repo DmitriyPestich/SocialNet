@@ -1,7 +1,6 @@
 import React, {FC} from 'react';
 import s from '../Dialogues.module.css';
 import {NavLink} from "react-router-dom";
-import {DialogsType, MessaguesType} from "../../../redux/dialog-reducer";
 
 type PropsType = {
     id: number,

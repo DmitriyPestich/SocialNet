@@ -13,9 +13,9 @@ type PropsType = {
     logout: () => void
 }
 export type LoginFormType = {
-    password: string | null,
-    email: string | null,
-    captcha: string | null,
+    password: string,
+    email: string,
+    captcha: string,
     rememberMe: boolean
 }
 type ProfileTypeKeys = GetStringKeys<LoginFormType>

@@ -1,9 +1,9 @@
 import React from 'react';
-import {addDialogMessage, DialogsType, MessaguesType} from "../../redux/dialog-reducer";
+import {actions, ActionsType, DialogsType, MessaguesType} from "../../redux/dialog-reducer";
 import Dialogues from "./Dialogues";
 import {connect} from "react-redux";
 import {withAuthRedirect} from "../../hoc/withAuthRedirect";
-import {compose} from "redux";
+import {compose, Dispatch} from "redux";
 import {AppStateType} from "../../redux/redux-store";
 
 /*function DialoguesContainer(props) {
@@ -67,9 +67,19 @@ let mapStateToProps = (state: AppStateType): MapStatePropsType => {
     }
 };*/
 
+let mapDispatchToProps = (dispatch: Dispatch<ActionsType>) => {
+    return {
+        addDialogMessage: (messageText: string) => {
+            dispatch(actions.addDialogMessage(messageText));
+        }
+    }
+};
+
 const DialoguesContainer = compose(
     withAuthRedirect,
-    connect<MapStatePropsType, MapDispatchPropsType, OwnPropsType, AppStateType>(mapStateToProps, {addDialogMessage})
+    connect<MapStatePropsType, MapDispatchPropsType, OwnPropsType, AppStateType>(mapStateToProps,
+        {addDialogMessage: actions.addDialogMessage}
+    )
 )(Dialogues);
 
 

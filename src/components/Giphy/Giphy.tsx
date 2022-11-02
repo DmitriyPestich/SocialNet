@@ -1,27 +1,23 @@
-import React, {ChangeEvent, FC} from 'react';
+import React, {FC, ChangeEvent} from 'react';
 
 type PropsType = {
-    saveGiphy: (file: any) => void,
     blocked: boolean
+    saveGiphy: (file: File) => void
 }
 
-export let Giphy: FC<PropsType> = ({saveGiphy, blocked}) => {
+const Giphy: FC<PropsType> = (props) => {
 
-    const onDownloadGiphy = (e: any) => {
+    const onMainPhotoSelected = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length) {
-            saveGiphy(e.target.files[0]);
-            console.log(e.target.files[0])
+            props.saveGiphy(e.target.files[0])
         }
     };
+    return (
+        <form>
+            <input type="file" onChange={onMainPhotoSelected}/>
+        </form>
+    )
+};
 
-  return (
-      <div>
-          <h1>Giphy</h1>
-          <form>
-              <input disabled={blocked} type="file" onChange={onDownloadGiphy}/>
-          </form>
-      </div>
-  );
-}
-
+export default Giphy;
 

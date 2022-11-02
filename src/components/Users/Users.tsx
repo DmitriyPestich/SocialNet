@@ -10,8 +10,7 @@ type PropsType = {
     currentPage: number,
     onChangePage: (page: number) => void
     users: Array<UsersType>
-    follow: (userId: number) => void,
-    unfollow: (userId: number) => void,
+    subscribeUser: (userId: number, subscribe: boolean) => void,
     followingProccess: Array<number>,
     isAuth: boolean
 }

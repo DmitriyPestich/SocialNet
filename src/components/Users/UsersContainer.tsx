@@ -1,8 +1,7 @@
 import React, {PureComponent} from 'react';
 import {connect} from 'react-redux';
 import {
-    follow, uploadUsers,
-    unfollow
+    subscribeUser, uploadUsers
 } from '../../redux/users-reducer';
 import Users from './Users';
 import Preloader from "../common/Preloader/Preloader";
@@ -29,8 +28,7 @@ type MapStatePropsType = {
 }
 type MapDispatchPropsType = {
     uploadUsers: (currentPage: number, amountUsersOnPage: number) => void,
-    follow: (userId: number) => void,
-    unfollow: (userId: number) => void,
+    subscribeUser: (userId: number, subscribe: boolean) => void
 }
 type OwnPropsType = {
 
@@ -59,8 +57,7 @@ class UsersContainer extends PureComponent<PropsType> {
                     amountUsersOnPage={this.props.amountUsersOnPage}
                     currentPage={this.props.currentPage}
                     onChangePage={this.onChangePage.bind(this)}
-                    follow={this.props.follow}
-                    unfollow={this.props.unfollow}
+                    subscribeUser={this.props.subscribeUser}
                     followingProccess={this.props.followingProccess}
                     isAuth={this.props.isAuth}
                 />
@@ -84,7 +81,7 @@ let mapStateToProps = (state: AppStateType): MapStatePropsType => {
 
 export default compose(
     //<TStateProps = {}, TDispatchProps = {}, TOwnProps = {}, State = DefaultState>
-    connect<MapStatePropsType, MapDispatchPropsType, OwnPropsType, AppStateType>(mapStateToProps, {follow, unfollow, uploadUsers})
+    connect<MapStatePropsType, MapDispatchPropsType, OwnPropsType, AppStateType>(mapStateToProps, {subscribeUser, uploadUsers})
 )(UsersContainer);
 
 

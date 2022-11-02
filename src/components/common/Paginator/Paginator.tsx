@@ -7,13 +7,13 @@ import cn from "classnames";
 type PropsType = {
     totalCount: number,
     amountUsersOnPage: number,
-    currentPage: number,
+    currentPage?: number,
     onChangePage: (page: number) => void,
     step?: number,
     visiblePages?: number,
 }
 
-let Paginator: React.FC<PropsType> = ({totalCount, amountUsersOnPage, currentPage, onChangePage, step = 10, visiblePages = 4}) => {
+let Paginator: React.FC<PropsType> = ({totalCount, amountUsersOnPage, currentPage = 1, onChangePage, step = 10, visiblePages = 4}) => {
 
     let pagesCount = Math.ceil(totalCount / amountUsersOnPage);
 
@@ -38,7 +38,7 @@ let Paginator: React.FC<PropsType> = ({totalCount, amountUsersOnPage, currentPag
 
     return (
         <div className={s.navigation}>
-            { firstPage !== 1 && <button onClick={decreasePage}><FontAwesomeIcon icon="angle-double-left" /></button>}
+            { firstPage !== 1 && <button onClick={decreasePage}><FontAwesomeIcon icon={["fas", "angle-double-left"]} /></button>}
             {pages.map((p) => {
                 let classNames = cn(s.page, currentPage === p ? s.selectedPage : '');
                 return <span className={classNames}
@@ -48,7 +48,7 @@ let Paginator: React.FC<PropsType> = ({totalCount, amountUsersOnPage, currentPag
                              key={p}
                 >{p}</span>
             })}
-            { lastPage !== pagesCount && <button onClick={increasePage}><FontAwesomeIcon icon="angle-double-right" /></button>}
+            { lastPage !== pagesCount && <button onClick={increasePage}><FontAwesomeIcon icon={["fas", "angle-double-right"]} /></button>}
         </div>
     );
 };
